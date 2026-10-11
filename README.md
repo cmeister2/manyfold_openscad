@@ -6,17 +6,12 @@ Rendering happens in your browser. OpenSCAD comes bundled with the plugin, so it
 
 ## Install
 
-You'll need **Manyfold 0.150.0 or newer**. We've tested with 0.150.0. Back up your database before installing or upgrading.
+This plugin requires **Manyfold 0.150.0 or newer** and has been tested with 0.150.0. Back up your database before installing or upgrading.
 
 1. Upload `manyfold_openscad.zip` under **Settings > Plugins**. Keep the same ZIP filename when updating.
-2. Restart Manyfold, then run the database migrations. The plugin upload doesn't run these for you:
+2. Restart Manyfold and its background workers. In Docker, Manyfold runs the plugin's database migrations automatically during startup.
 
-   ```sh
-   docker compose exec manyfold bundle exec rails db:migrate
-   ```
-
-   Without Docker, run `bundle exec rails db:migrate` from your Manyfold installation.
-3. Restart Manyfold and its background workers after the migrations finish.
+For a non-Docker installation, run `bundle exec rails db:prepare:with_data` from your Manyfold installation before restarting the application and its workers.
 
 You can also extract the ZIP into `$PLUGINS_PATH/manyfold_openscad/` before restarting. See [Manyfold's plugin guide](https://manyfold.app/sysadmin/plugins) for that setup.
 
@@ -36,7 +31,7 @@ Models need to fit in a single, self-contained SCAD file. `include`, `use`, `imp
 
 Controls come from OpenSCAD's usual Customizer settings, including checkboxes, numbers, text, dropdowns and numeric vectors. Groups, labels, bounds and steps carry through, and hidden settings stay hidden. Text geometry uses the bundled DejaVu Sans font.
 
-We've tested in Chromium. Other browsers, mobile devices and large models still need more testing. Large renders can use a lot of browser memory. Cancel a slow render, or try a smaller model if rendering fails.
+This plugin has been tested in Chromium. Other browsers, mobile devices and large models still need more testing. Large renders can use a lot of browser memory. Cancel a slow render, or try a smaller model if rendering fails.
 
 The default limits are:
 
