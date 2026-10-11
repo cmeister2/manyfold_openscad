@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+"""Export the real Manyfold customizer pages as a self-contained static demo."""
+
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+
+
+ROOT = Path(__file__).resolve().parents[1]
+IMAGE = "manyfold3d/manyfold-solo:0.150.0@sha256:f171f544b81ab92d373906a22114f65851b5b4f30861883baed754ca94651a7d"
+
+
+def main():
+    destination = ROOT / "dist" / "demo"
+    destination.parent.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".demo-", dir=destination.parent) as staging:
+        subprocess.run([
+            "docker", "run", "--rm", "--pull=missing", "--network=none",
+            "--entrypoint", "/plugins/manyfold_openscad/demo/run-host",
+            "--mount", f"type=bind,source={ROOT},target=/plugins/manyfold_openscad,readonly",
+            "--mount", f"type=bind,source={staging},target=/demo-output",
+            "--tmpfs", "/config", "--tmpfs", "/tmp",
+            "--env", "PLUGINS_PATH=/plugins",
+            "--env", "DATABASE_URL=sqlite3:/config/manyfold.sqlite3",
+            "--env", "REDIS_URL=redis://127.0.0.1:6379/1",
+            "--env", "MULTIUSER=disabled",
+            "--env", "SECRET_KEY_BASE=manyfold-openscad-disposable-demo-build-with-no-real-data",
+            "--env", "MANYFOLD_LOG_LEVEL=warn",
+            "--env", "SUDO_RUN_UNSAFELY=enabled",
+            "--env", "MANYFOLD_OPENSCAD_DEMO_BUILD=1",
+            "--env", f"DEMO_OWNER_UID={os.getuid()}",
+            "--env", f"DEMO_OWNER_GID={os.getgid()}",
+            IMAGE,
+        ], check=True)
+        if destination.exists():
+            shutil.rmtree(destination)
+        Path(staging).rename(destination)
+    print(destination)
+
+
+if __name__ == "__main__":
+    main()

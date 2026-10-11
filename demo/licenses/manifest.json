@@ -1,0 +1,93 @@
+{
+  "manyfold": {
+    "version": "0.150.0",
+    "image": "manyfold3d/manyfold-solo:0.150.0@sha256:f171f544b81ab92d373906a22114f65851b5b4f30861883baed754ca94651a7d",
+    "source": "https://github.com/manyfold3d/manyfold/tree/449286dd994601226bf39a25ac852fe0414aa0dc",
+    "files": [
+      "manyfold-LICENSE.md"
+    ]
+  },
+  "packages": [
+    {
+      "package": "bootstrap",
+      "version": "5.3.8",
+      "repository": "https://github.com/twbs/bootstrap",
+      "tarball": "https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.8.tgz",
+      "integrity": "sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==",
+      "files": [
+        "bootstrap-LICENSE.txt"
+      ]
+    },
+    {
+      "package": "bootstrap-icons",
+      "version": "1.13.1",
+      "repository": "https://github.com/twbs/icons",
+      "tarball": "https://registry.npmjs.org/bootstrap-icons/-/bootstrap-icons-1.13.1.tgz",
+      "integrity": "sha512-ijombt4v6bv5CLeXvRWKy7CuM3TRTuPEuGaGKvTV5cz65rQSY8RQ2JcHt6b90cBBAC7s8fsf2EkQDldzCoXUjw==",
+      "files": [
+        "bootstrap-icons-LICENSE.txt"
+      ]
+    },
+    {
+      "package": "@infinizhen/rpg-awesome-continued",
+      "version": "1.0.6",
+      "repository": "https://github.com/Infinizhen/Rpg-Awesome-Continued",
+      "tarball": "https://registry.npmjs.org/@infinizhen/rpg-awesome-continued/-/rpg-awesome-continued-1.0.6.tgz",
+      "integrity": "sha512-4m98zFn7eIKtW0HjiBKZ2tJWdSVBYKDAutxtrnv3c9/+hZ1Pp/vlYjvbjdgO7q1lgyhqEntbEHK+xK2Y5h2f8Q==",
+      "files": [
+        "rpg-awesome-continued-LICENSE.md",
+        "rpg-awesome-continued-README.md",
+        "rpg-awesome-continued-NOTICE.txt",
+        "OFL-1.1.txt",
+        "CC-BY-3.0.txt",
+        "MIT.txt"
+      ]
+    },
+    {
+      "package": "tom-select",
+      "version": "2.6.2",
+      "repository": "https://github.com/orchidjs/tom-select",
+      "tarball": "https://registry.npmjs.org/tom-select/-/tom-select-2.6.2.tgz",
+      "integrity": "sha512-eiXIkk82XzzUTOVQDFpy+ZGejuqdTvMukyUyeZBQaKnqW42UoTiTZnrod/eX0rkqJEc4rZY9DZ3zdjV07i29wQ==",
+      "files": [
+        "tom-select-LICENSE.txt"
+      ]
+    },
+    {
+      "package": "@uppy/core",
+      "version": "6.0.1",
+      "repository": "https://github.com/transloadit/uppy",
+      "tarball": "https://registry.npmjs.org/@uppy/core/-/core-6.0.1.tgz",
+      "integrity": "sha512-H+v4tOBPYY8Cf0JWoGa3+JPTl9Of8SBaVUH5TNwGgynncTWrQtuyGK91hv9wOjm0SFds3X5psPx1ArhngdSrBg==",
+      "files": [
+        "uppy-core-LICENSE.txt"
+      ]
+    },
+    {
+      "package": "@uppy/dashboard",
+      "version": "5.1.0",
+      "repository": "https://github.com/transloadit/uppy",
+      "tarball": "https://registry.npmjs.org/@uppy/dashboard/-/dashboard-5.1.0.tgz",
+      "integrity": "sha512-TCuDbsAWokPO2LzubDoXyBskY/DHFB9tyDeHJe1FGBHrm0sY2zd+yEW7c4HNMDiIYCs/AdFJWAjQosCT07rD6Q==",
+      "files": [
+        "uppy-dashboard-LICENSE.txt"
+      ]
+    },
+    {
+      "package": "driver.js",
+      "version": "1.8.0",
+      "repository": "https://github.com/nilbuild/driver.js",
+      "tarball": "https://registry.npmjs.org/driver.js/-/driver.js-1.8.0.tgz",
+      "integrity": "sha512-+8/IO7h1v14IzWh2GP60N7T3PFZweXwdn5e5POuxRSBoCYUojsBxzqawPeXh3YZIibRy7EehYNEyxe7slwwtdg==",
+      "files": [
+        "driverjs-LICENSE.txt"
+      ]
+    }
+  ],
+  "additional_license_sources": {
+    "OFL-1.1.txt": "https://openfontlicense.org/documents/OFL.txt",
+    "CC-BY-3.0.txt": "https://creativecommons.org/licenses/by/3.0/legalcode.txt",
+    "MIT.txt": "https://raw.githubusercontent.com/spdx/license-list-data/v3.27.0/text/MIT.txt",
+    "manyfold-LICENSE.md": "https://raw.githubusercontent.com/manyfold3d/manyfold/449286dd994601226bf39a25ac852fe0414aa0dc/LICENSE.md"
+  }
+}

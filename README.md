@@ -43,6 +43,21 @@ The default limits are:
 
 Set these variables before restarting Manyfold if you need different limits. See the [validation notes](docs/renderer-validation.md) for the checks and measurements so far.
 
+## Browser demo
+
+The [browser demo](https://cmeister2.github.io/manyfold_openscad/) uses the same page, styling and renderer as the plugin, with both box examples. Controls, STL generation, preview rotation and downloads work in the browser. **Save variant** is visible but does nothing; actions that need a Manyfold server are inactive.
+
+Build and try the static site locally:
+
+```sh
+npm run build:demo
+node test/demo/serve.mjs dist/demo
+```
+
+Open [the local demo](http://localhost:4173/manyfold_openscad/). Docker is needed to export the page from a disposable Manyfold installation. The generated site in `dist/demo` runs without Manyfold or a database.
+
+Run `npm run test:demo` to check the exported site in Chromium. The GitHub Pages workflow builds and tests the demo on pull requests and publishes it when changes reach `main`.
+
 ## Try it in Docker
 
 From a checkout of this repository, start the development instance:
