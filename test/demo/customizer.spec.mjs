@@ -64,16 +64,36 @@ async function finishPaint(page) {
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 }
 
-test("exported Manyfold page renders a modified box and keeps Save variant inert", async ({page}, info) => {
+async function expectPreview(page) {
+  const canvas = page.locator("[data-preview]");
+  await expect(canvas).toBeVisible();
+  expect(await canvas.evaluate(node => {
+    const {data} = node.getContext("2d").getImageData(0, 0, node.width, node.height);
+    return data.some((value, index) => index % 4 === 3 && value !== 0);
+  })).toBe(true);
+}
+
+test("exported Manyfold page renders defaults eagerly and keeps Save variant inert", async ({page}, info) => {
   await page.goto("index.html");
   await expect(page.locator("#main-navbar")).toBeVisible();
   await expect(page.locator("#footer")).toBeVisible();
+  await expect(page.locator("[data-download]")).toBeEnabled();
   await expect(page.locator("[data-generate]")).toBeEnabled();
   const {url, source} = await sourceDocument(page, "simple_box.scad");
   await expect(page.locator("[data-parameters] input")).toHaveCount(3);
   await expect(page.getByRole("button", {name: "Save variant", exact: true})).toBeVisible();
-  await expect(page.locator("[data-save]")).toBeDisabled();
+  await expect(page.locator("[data-save]")).toBeEnabled();
+  const initialMesh = await downloadMesh(page, info, "box-default.stl");
+  expect(initialMesh.bounds.min).toEqual([0, 0, 0]);
+  expect(initialMesh.bounds.max).toEqual([100, 80, 40]);
+  await expectPreview(page);
+  await screenshot(page, info, "simple-box-default-demo");
   await page.getByLabel("Width in millimetres", {exact: true}).fill("150");
+  await expect(page.locator("[data-stale]")).toBeVisible();
+  await expect(page.locator("[data-download]")).toBeDisabled();
+  await expect(page.locator("[data-save]")).toBeDisabled();
+  await finishPaint(page);
+  await expect(page.locator("[data-download]")).toBeDisabled();
   await page.locator("[data-generate]").click();
   await expect(page.locator("[data-download]")).toBeEnabled();
   await expect(page.locator("[data-save]")).toBeEnabled();
@@ -118,19 +138,31 @@ test("exported Manyfold page renders a modified box and keeps Save variant inert
   expect(network.get(page).requests).toHaveLength(beforeNavigation);
 });
 
-test("featureful export discovers typed controls and renders vector offsets", async ({page}, info) => {
+test("featureful export renders defaults eagerly and regenerates edited controls", async ({page}, info) => {
   await page.goto("index.html");
-  await expect(page.locator("[data-generate]")).toBeEnabled();
+  await expect(page.locator("[data-download]")).toBeEnabled();
   await page.locator('a[href$="controls.html"]').first().click();
   await expect(page).toHaveURL(/\/manyfold_openscad\/controls\.html$/);
   await expect(page.locator("#main-navbar")).toBeVisible();
   await expect(page.locator("#footer")).toBeVisible();
+  await expect(page.locator("[data-download]")).toBeEnabled();
   await expect(page.locator("[data-generate]")).toBeEnabled();
   const {url, source} = await sourceDocument(page, "customizer_box.scad");
   await expect(page.locator("[data-parameters] fieldset legend")).toHaveText(["Dimensions", "Appearance"]);
   await expect(page.locator("[data-parameters] label")).toHaveCount(8);
   await expect(page.getByLabel("Label text", {exact: true})).toHaveValue('A "quoted" box');
+  await expect(page.getByRole("button", {name: "Save variant", exact: true})).toBeVisible();
+  await expect(page.locator("[data-save]")).toBeEnabled();
+  const initialMesh = await downloadMesh(page, info, "featureful-box-default.stl");
+  expect(initialMesh.bounds.min).toEqual([0, 0, 0]);
+  expect(initialMesh.bounds.max).toEqual([100, 80, 40]);
+  expect(initialMesh.triangles).toBeGreaterThan(12);
+  await expectPreview(page);
+  await screenshot(page, info, "featureful-box-default-demo");
   await page.getByLabel("Surface finish", {exact: true}).selectOption({label: "Rough"});
+  await expect(page.locator("[data-stale]")).toBeVisible();
+  await expect(page.locator("[data-download]")).toBeDisabled();
+  await expect(page.locator("[data-save]")).toBeDisabled();
   await page.getByLabel("Add a lid", {exact: true}).check();
   await page.getByLabel("Label text", {exact: true}).fill('quoted "; cube(900); //');
   await page.getByLabel("Position in millimetres 1", {exact: true}).fill("3");
@@ -139,9 +171,17 @@ test("featureful export discovers typed controls and renders vector offsets", as
   await expect(page.locator("[data-download]")).toBeEnabled();
   const mesh = await downloadMesh(page, info, "featureful-box.stl");
   expect(mesh.bounds.min).toEqual([3, 0, 0]);
-  expect(mesh.bounds.max).toEqual([103, 80, 40]);
+  expect(mesh.bounds.max).toEqual([103, 80, 43]);
   expect(mesh.triangles).toBeGreaterThan(12);
   await screenshot(page, info, "featureful-box-demo");
+  await page.getByLabel("Add a lid", {exact: true}).uncheck();
+  await expect(page.locator("[data-stale]")).toBeVisible();
+  await expect(page.locator("[data-download]")).toBeDisabled();
+  await page.locator("[data-generate]").click();
+  await expect(page.locator("[data-download]")).toBeEnabled();
+  const withoutLid = await downloadMesh(page, info, "featureful-box-without-lid.stl");
+  expect(withoutLid.bounds.min).toEqual([3, 0, 0]);
+  expect(withoutLid.bounds.max).toEqual([103, 80, 40]);
   await page.locator("[data-reset]").click();
   await expect(page.getByLabel("Label text", {exact: true})).toHaveValue('A "quoted" box');
   await expect(page.getByLabel("Position in millimetres 1", {exact: true})).toHaveValue("0");
@@ -151,6 +191,7 @@ test("featureful export discovers typed controls and renders vector offsets", as
   expect(await (await page.request.get(url)).json()).toEqual(source);
   await page.locator('a[href$="index.html"]').first().click();
   await expect(page).toHaveURL(/\/manyfold_openscad\/index\.html$/);
+  await expect(page.locator("[data-download]")).toBeEnabled();
   await expect(page.locator("[data-generate]")).toBeEnabled();
   await expect(page.locator("[data-parameters] input")).toHaveCount(3);
 });

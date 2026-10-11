@@ -17,13 +17,13 @@ You can also extract the ZIP into `$PLUGINS_PATH/manyfold_openscad/` before rest
 
 ## Customize a model
 
-Open a model's menu and choose **Customize**, then pick a `.scad` file. Change its settings and click **Generate STL**. Drag the preview to rotate it, or use the mouse wheel to zoom. **Reset** puts the settings back to the author's defaults.
+Open a model's menu and choose **Customize**, then pick a `.scad` file. Its initial STL is generated automatically, ready to preview, download or save. Change its settings and click **Generate STL** to update it. Drag the preview to rotate it, or use the mouse wheel to zoom. **Reset** puts the settings back to the author's defaults.
 
 Choose **Download STL** to keep a local copy, or **Save variant** to add it to the model in Manyfold. Saving requires permission to edit that model and a new filename. Your original SCAD file stays untouched.
 
 If you change a setting, generate again before downloading or saving. You can cancel a slow render and try again. After saving, Manyfold may take a little time to process the new file; the page shows its progress.
 
-Saved variants remember their settings. Use **Reopen** to pick up where you left off, or **Download manifest** to get a JSON record of how the variant was made. If the source SCAD file has changed, the page will tell you before restoring the old settings.
+Saved variants remember their settings. **Reopen** automatically generates a preview with those settings. Use **Download manifest** to get a JSON record of how the variant was made. If the source SCAD file has changed, review and acknowledge the warning before generation starts.
 
 ## What works today
 

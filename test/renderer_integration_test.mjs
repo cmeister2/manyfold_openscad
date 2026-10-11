@@ -64,9 +64,29 @@ test("width edit changes real STL bounds and source bytes stay unchanged", async
   const original = await run("generate");
   const edited = await run("generate", fixture, {width: 150, offset: [2, 3, 4], lid: true});
   assert.deepEqual(bounds(original.stl), {min: [0, 0, 0], max: [100, 80, 40]});
-  assert.deepEqual(bounds(edited.stl), {min: [2, 3, 4], max: [152, 83, 44]});
+  assert.deepEqual(bounds(edited.stl), {min: [2, 3, 4], max: [152, 83, 46]});
   assert.equal(createHash("sha256").update(fixture).digest("hex"), digest);
   assert.deepEqual(edited.renderOptions, {backend: "Manifold", format: "binstl"});
+});
+
+function volume(stl) {
+  const data = new DataView(stl);
+  let total = 0;
+  for (let triangle = 0; triangle < data.getUint32(80, true); triangle++) {
+    const vertices = Array.from({length: 9}, (_, index) => data.getFloat32(84 + triangle * 50 + 12 + index * 4, true));
+    const [ax, ay, az, bx, by, bz, cx, cy, cz] = vertices;
+    total += ax * (by * cz - bz * cy) + ay * (bz * cx - bx * cz) + az * (bx * cy - by * cx);
+  }
+  return Math.abs(total / 6);
+}
+
+test("adding a lid closes the box with a panel of the selected wall thickness", async () => {
+  const values = {width: 150, wall: 3, offset: [2, 3, 4]};
+  const open = await run("generate", fixture, {...values, lid: false});
+  const closed = await run("generate", fixture, {...values, lid: true});
+  assert.deepEqual(bounds(open.stl), {min: [2, 3, 4], max: [152, 83, 44]});
+  assert.deepEqual(bounds(closed.stl), {min: [2, 3, 4], max: [152, 83, 47]});
+  assert.ok(Math.abs(volume(closed.stl) - volume(open.stl) - 150 * 80 * 3) < 1e-6);
 });
 
 test("quoted parameter strings remain literal and cannot change source expressions", async () => {
