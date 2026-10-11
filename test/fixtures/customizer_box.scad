@@ -21,9 +21,14 @@ wall = 2; // [1:Thin,2:Standard,3:Thick]
 /* [Hidden] */
 internal = 8;
 
-translate(offset)
+translate(offset) {
   difference() {
     cube([width, depth, height]);
     translate([wall, wall, wall])
       cube([width - 2 * wall, depth - 2 * wall, height]);
   }
+
+  if (lid)
+    translate([0, 0, height])
+      cube([width, depth, wall]);
+}

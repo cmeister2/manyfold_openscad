@@ -82,7 +82,10 @@ export class CustomizerApp {
     on(this.reset, "click", () => { this.state.reset(); this.writeInputs(); this.clearSaved(); this.showError(); this.sync(); });
     on(this.download, "click", () => this.downloadSTL());
     on(this.saveForm, "submit", (event) => { event.preventDefault(); this.saveVariant(); });
-    on(this.acknowledge, "click", () => { this.config.sourceMismatch = false; this.sourceWarning.hidden = true; this.sync(); });
+    on(this.acknowledge, "click", () => {
+      this.config.sourceMismatch = false; this.sourceWarning.hidden = true; this.sync();
+      if (this.initialRenderPending) this.generateSTL();
+    });
     on(this.filename, "input", () => { this.saveAttempt = null; });
     this.sync();
   }
@@ -126,19 +129,26 @@ export class CustomizerApp {
       const metadata = await this.renderer.discover(this.source.content);
       if (this.disposed) return;
       this.addWarnings(metadata.warnings);
+      this.initialRenderPending = true;
       try { this.state = new CustomizerState(metadata.parameters, this.config.initialParameters || {}); }
-      catch (error) { this.state = new CustomizerState(metadata.parameters); this.showError(error); }
+      catch (error) {
+        this.state = new CustomizerState(metadata.parameters); this.showError(error);
+        // Restored settings must not silently produce a different variant.
+        this.initialRenderPending = false;
+      }
       this.buildForm();
       this.busy = "";
-      this.statusMessage(this.state.parameters.length ? "ready" : "no_parameters");
+      this.statusMessage("ready");
       this.filename.value ||= this.source.filename.replace(/\.scad$/i, "-custom.stl").split(/[\\/]/).pop();
       this.sync();
+      if (this.initialRenderPending && !this.config.sourceMismatch) await this.generateSTL();
     } catch (error) {
       if (!this.disposed) { this.addWarnings(error.warnings); this.busy = ""; this.showError(error); this.statusMessage(""); this.sync(); }
     }
   }
   buildForm() {
     this.form.replaceChildren(); this.inputs.clear();
+    if (!this.state.parameters.length) this.form.append(element("p", {className: "text-muted", text: this.t("no_parameters")}));
     const groups = new Map();
     this.state.parameters.forEach((parameter, index) => {
       const group = parameter.group || this.t("parameters");
@@ -204,7 +214,8 @@ export class CustomizerApp {
     }
   }
   sync() {
-    const ready = Boolean(this.state?.parameters.length && !this.busy && !this.config.sourceMismatch);
+    if (this.disposed) return;
+    const ready = Boolean(this.state && !this.busy && !this.config.sourceMismatch);
     this.generate.disabled = !ready;
     this.reset.disabled = !this.state || Boolean(this.busy);
     this.cancel.hidden = this.busy !== "generating";
@@ -218,11 +229,13 @@ export class CustomizerApp {
   }
   clearSaved() { this.saved.replaceChildren(); this.saveAttempt = null; }
   async generateSTL() {
-    if (this.generate.disabled) return;
+    if (this.disposed || this.generate.disabled) return;
     if (!this.form.reportValidity()) { this.showError(new Error("invalid_parameters")); return; }
+    this.initialRenderPending = false;
     this.busy = "generating"; this.showError(); this.statusMessage("generating"); this.clearSaved(); this.sync();
     try {
       const output = await this.renderer.generate(this.source.content, copy(this.state.values));
+      if (this.disposed) return;
       this.addWarnings(output.warnings);
       try { this.previewMesh.setMesh(output.stl); }
       catch (error) {
@@ -231,6 +244,7 @@ export class CustomizerApp {
       }
       this.state.generated(output); this.statusMessage("generated");
     } catch (error) {
+      if (this.disposed) return;
       this.addWarnings(error.warnings);
       if (String(error.code || error.message).toLowerCase() === "cancelled") this.statusMessage("cancelled");
       else { this.showError(error); this.statusMessage(""); }

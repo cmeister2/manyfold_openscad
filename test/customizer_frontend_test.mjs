@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {CustomizerState, validateParameter} from "../app/assets/manyfold_openscad/customizer.mjs";
+import {CustomizerApp, CustomizerState, validateParameter} from "../app/assets/manyfold_openscad/customizer.mjs";
 import {parseSTL} from "../app/assets/manyfold_openscad/preview.mjs";
 
 const parameters = [
@@ -73,6 +73,36 @@ test("every edit, invalid edit and reset invalidate generated output until expli
   state.reset();
   assert.equal(state.canUseOutput, false);
 });
+
+for (const outcome of ["completed", "cancelled"]) {
+  test(`a ${outcome} render cannot update a disposed customizer`, async () => {
+    let resolve, reject;
+    const pending = new Promise((success, failure) => { resolve = success; reject = failure; });
+    const updates = [];
+    const app = Object.assign(Object.create(CustomizerApp.prototype), {
+      config: {canSave: true}, state: new CustomizerState(parameters), busy: "", inputs: new Map(),
+      source: {content: "cube(10);"}, form: {reportValidity: () => true}, listeners: [],
+      root: {setAttribute: (...args) => updates.push(args), classList: {toggle: (...args) => updates.push(args)}},
+      generate: {disabled: false}, reset: {}, cancel: {}, download: {}, save: {}, filename: {}, stale: {},
+      renderer: {generate: () => pending, dispose() {}}, fetchController: new AbortController(),
+      previewMesh: {setMesh: () => updates.push("mesh"), dispose() {}},
+      addWarnings: () => updates.push("warnings"), showError: () => updates.push("error"),
+      statusMessage: (key) => updates.push(key), clearSaved: () => updates.push("saved")
+    });
+    const rendering = app.generateSTL();
+    assert.equal(app.download.disabled, true);
+    assert.equal(app.save.disabled, true);
+    app.dispose();
+    const previousUpdates = [...updates];
+    if (outcome === "completed") resolve({stl: new ArrayBuffer(4), warnings: []});
+    else reject(new Error("cancelled"));
+    await rendering;
+    assert.deepEqual(updates, previousUpdates);
+    assert.equal(app.state.canUseOutput, false);
+    assert.equal(app.download.disabled, true);
+    assert.equal(app.save.disabled, true);
+  });
+}
 
 function binaryTriangle(vertices) {
   const bytes = new Uint8Array(134);
