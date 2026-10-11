@@ -2,8 +2,10 @@
 
 The plugin is implemented as a mounted Rails engine against Manyfold 0.150.0.
 It registers the existing model-menu hook and appends its migration directory.
-The host needs no source change. Installation still requires an explicit host
-database migration and application/job-process restart.
+The host needs no source change. Manyfold's Docker startup runs
+`db:prepare:with_data`, which includes the plugin's migrations. Installation
+requires an application/job-process restart; non-Docker installations need to
+run the database preparation task before restarting.
 
 ## Locked engine and offline packaging
 
