@@ -1,20 +1,25 @@
 {
-  "name": "manyfold-cults3d-release",
+  "name": "manyfold-openscad-release",
   "version": "0.0.0-development",
+  "license": "AGPL-3.0-only",
   "private": true,
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cmeister2/manyfold_cults3d.git"
+    "url": "git+https://github.com/cmeister2/manyfold_openscad.git"
   },
   "engines": {
     "node": ">=24.15.0"
   },
   "scripts": {
+    "test:unit": "node --test test/customizer*_test.mjs test/renderer*_test.mjs",
+    "test:browser": "test/browser/run",
     "release": "semantic-release",
     "release:dry-run": "node bin/release-dry-run.mjs",
     "test:release": "node --test test/release*_test.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@semantic-release/exec": "7.1.0",
     "@semantic-release/github": "12.0.10",

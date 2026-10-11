@@ -4,6 +4,8 @@ __pycache__/
 .bundle/
 dist/
 node_modules/
+test-results/
+playwright-report/
 .env
 .env.*
 !.env.example

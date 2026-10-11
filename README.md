@@ -1,58 +1,90 @@
-# Cults3D for Manyfold
+# OpenSCAD Customizer for Manyfold
 
-List your purchased and downloaded free Cults3D models in Manyfold, link existing models, and sync metadata and images.
+Change the size of a box, turn a lid on or off, or tweak any settings a model's author has exposed. This plugin brings OpenSCAD's Customizer into Manyfold, so you can preview your changes and save or download an STL without editing the SCAD file.
+
+Rendering happens in your browser. OpenSCAD comes bundled with the plugin, so it works without an internet connection.
 
 ## Install
 
-Requires Manyfold 0.146.0 or newer. Importing and linking require administrator access.
+You'll need **Manyfold 0.150.0 or newer**. We've tested with 0.150.0. Back up your database before installing or upgrading.
 
-1. Download `manyfold_cults3d.zip` from the [latest release](https://github.com/cmeister2/manyfold_cults3d/releases/latest).
-2. Upload it under **Settings > Plugins**, then restart Manyfold. Keep the ZIP filename unchanged when installing updates.
-3. Set your **Cults3D username** and **API key** under **Settings > Integrations**. Generate a key on [Cults3D](https://cults3d.com/en/api/keys).
+1. Upload `manyfold_openscad.zip` under **Settings > Plugins**. Keep the same ZIP filename when updating.
+2. Restart Manyfold, then run the database migrations. The plugin upload doesn't run these for you:
 
-See Manyfold's [plugin installation guide](https://manyfold.app/sysadmin/plugins) for plugin directory setup.
+   ```sh
+   docker compose exec manyfold bundle exec rails db:migrate
+   ```
 
-## Use
+   Without Docker, run `bundle exec rails db:migrate` from your Manyfold installation.
+3. Restart Manyfold and its background workers after the migrations finish.
 
-Open **Providers > Cults3D > Import** and select **Refresh library** to load your purchased and previously downloaded free models. Refreshes update saved entries and remove ones no longer in your Cults3D library. Manyfold models and files are always kept. Failed refreshes leave the saved list unchanged.
+You can also extract the ZIP into `$PLUGINS_PATH/manyfold_openscad/` before restarting. See [Manyfold's plugin guide](https://manyfold.app/sysadmin/plugins) for that setup.
 
-**Status** shows your saved library and its links to Manyfold models. Choose **Create Model** on an unlinked entry to create a model and queue metadata and image sync. This requires a default Manyfold library.
+## Customize a model
 
-To link an existing Manyfold model, choose **Link to Cults3D** from its menu. Select a suggested library match with **Use this model**, or enter a Cults3D model URL, slug, or ID, then select **Link and sync**.
+Open a model's menu and choose **Customize**, then pick a `.scad` file. Change its settings and click **Generate STL**. Drag the preview to rotate it, or use the mouse wheel to zoom. **Reset** puts the settings back to the author's defaults.
 
-Sync imports the name, description, printing details, tags, license, creator, and images. Download 3D files from Cults3D and import them into Manyfold separately; the plugin cannot download them through the API.
+Choose **Download STL** to keep a local copy, or **Save variant** to add it to the model in Manyfold. Saving requires permission to edit that model and a new filename. Your original SCAD file stays untouched.
 
-On **Creators**, choose **Link to Cults3D** from a creator's menu and select one of their linked models to sync their name, bio, and avatar. The action appears when they have Cults3D-linked models and no existing Cults3D profile link.
+If you change a setting, generate again before downloading or saving. You can cancel a slow render and try again. After saving, Manyfold may take a little time to process the new file; the page shows its progress.
+
+Saved variants remember their settings. Use **Reopen** to pick up where you left off, or **Download manifest** to get a JSON record of how the variant was made. If the source SCAD file has changed, the page will tell you before restoring the old settings.
+
+## What works today
+
+Models need to fit in a single, self-contained SCAD file. `include`, `use`, `import` and `surface` aren't supported yet.
+
+Controls come from OpenSCAD's usual Customizer settings, including checkboxes, numbers, text, dropdowns and numeric vectors. Groups, labels, bounds and steps carry through, and hidden settings stay hidden. Text geometry uses the bundled DejaVu Sans font.
+
+We've tested in Chromium. Other browsers, mobile devices and large models still need more testing. Large renders can use a lot of browser memory. Cancel a slow render, or try a smaller model if rendering fails.
+
+The default limits are:
+
+| Limit | Default | Environment variable |
+| --- | --- | --- |
+| SCAD file size | 1 MiB | `OPENSCAD_MAX_SOURCE_BYTES` |
+| Generated STL size | 32 MiB | `OPENSCAD_MAX_OUTPUT_BYTES` |
+| Time per operation | 120 seconds | `OPENSCAD_GENERATION_TIMEOUT_MS` |
+
+Set these variables before restarting Manyfold if you need different limits. See the [validation notes](docs/renderer-validation.md) for the checks and measurements so far.
+
+## Try it in Docker
+
+From a checkout of this repository, start the development instance:
+
+```sh
+docker compose up --build -d --wait
+docker compose exec manyfold bundle exec rails runner /plugins/manyfold_openscad/docker/load-examples.rb
+```
+
+Open [Manyfold on localhost:3216](http://localhost:3216). The setup creates a local administrator and a library, and the example loader adds two boxes:
+
+- [Simple box](http://localhost:3216/manyfold_openscad/models/openscadbox/customize) — just width, depth and height ([SCAD](test/fixtures/simple_box.scad)).
+- [Featureful box](http://localhost:3216/manyfold_openscad/models/openscadcontrols/customize) — more controls to try ([SCAD](test/fixtures/customizer_box.scad)).
+
+The loader leaves existing example files alone. Development data stays in the Docker volume. Set `OPENSCAD_PORT` to use another port, and restart after code changes.
 
 ## Development
 
-Copy `.env.example` to `.env` and set `CULTS3D_USERNAME` and `CULTS3D_API_KEY`. These environment variables override Manyfold's integration settings.
-
-Start the development instance with Docker Compose:
-
-```sh
-docker compose up --build -d
-```
-
-Open <http://localhost:3215>. An administrator and default library are created automatically. Data persists in the Compose volume. After code changes, run `docker compose restart manyfold`.
-
-Run plugin and package tests with Python 3 and Docker:
-
-```sh
-bin/test
-```
-
-Tests use disposable containers and mocked API responses. Release tooling tests require Node 24.15 or newer:
+You'll need Node 24.15+ and Python 3. Docker provides Ruby and Manyfold; you don't need to install OpenSCAD separately.
 
 ```sh
 npm ci --ignore-scripts
-npm run test:release
+bin/test
+npx playwright install chromium
+npm run test:browser
 ```
 
-Build a plugin ZIP with an explicit version:
+`bin/test` covers the browser code, real OpenSCAD renders, release tools, and packaging. It also tests the Rails integration from both the checkout and a built ZIP, using disposable containers. Set `OPENSCAD_TEST_IMAGE` to use a compatible cached Manyfold image.
+
+To build the plugin ZIP:
 
 ```sh
-python3 bin/package 1.0.0
+python3 bin/package 0.1.0
 ```
 
-The archive is written to `dist/manyfold_cults3d.zip`. Releases publish automatically from `main` using Conventional Commits; `npm run release:dry-run` previews the next release.
+You'll find it at `dist/manyfold_openscad.zip`, with both example SCAD files included. Releases use Conventional Commits. The [renderer notes](vendor/openscad/README.md) explain how to verify or download the pinned OpenSCAD files.
+
+## License
+
+Copyright (C) 2026 Max Dymond. This plugin's code is licensed under **AGPL-3.0-only**; see [LICENSE](LICENSE). Bundled OpenSCAD and DejaVu Sans keep their own licenses. The [licensing notes](docs/licensing.md) have the details and links to the renderer's source.

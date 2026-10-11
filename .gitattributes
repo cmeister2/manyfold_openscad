@@ -1,0 +1,2 @@
+# Preserve upstream asset bytes, including their original whitespace.
+vendor/openscad/** -text -whitespace

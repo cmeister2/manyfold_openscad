@@ -1,0 +1,78 @@
+<h1><%= t("manyfold_openscad.title") %></h1>
+<p><%= link_to t("manyfold_openscad.back_to_model"), main_app.model_path(@model) %></p>
+<p class="text-muted"><%= t("manyfold_openscad.single_file") %></p>
+
+<% if @source_file.nil? %>
+  <h2 class="h4"><%= t("manyfold_openscad.choose_source") %></h2>
+  <% if @sources.empty? %>
+    <p role="status"><%= t("manyfold_openscad.no_sources") %></p>
+  <% else %>
+    <ul class="list-group">
+      <% @sources.each do |source| %>
+        <li class="list-group-item"><%= link_to source.filename, manyfold_openscad.customize_model_path(model_id: @model.to_param, source_file_id: source.id) %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% else %>
+  <p><strong><%= t("manyfold_openscad.source") %>:</strong> <%= @source_file.filename %></p>
+  <%= stylesheet_link_tag manyfold_openscad.asset_path(name: "customizer.css") %>
+  <% config = @customizer_config.deep_stringify_keys %>
+  <% labels = %w[parameters off_step_hint loading ready no_parameters generating generated cancelled saving saved save_retry save_pending view_file download_manifest reopen] %>
+  <% errors = %w[unsupported_browser invalid_parameters unsupported_parameter missing_dependencies unsupported_dependencies empty_geometry render_failed metadata_failed asset_failed timeout source_too_large output_too_large invalid_mesh preview_too_large request_failed invalid_filename] %>
+  <% config["strings"] = labels.to_h { |name| [name, t("manyfold_openscad.#{name}", step: "%{step}")] }.merge(errors.to_h { |name| [name, t("manyfold_openscad.errors.#{name}")] }) %>
+  <script type="application/json" data-openscad-config nonce="<%= content_security_policy_nonce %>"><%= raw json_escape(config.to_json) %></script>
+  <div data-openscad-customizer>
+    <div data-source-warning class="alert alert-warning" role="alert" hidden>
+      <p><%= t("manyfold_openscad.source_changed") %></p>
+      <button type="button" data-acknowledge class="btn btn-outline-secondary"><%= t("manyfold_openscad.use_current_source") %></button>
+    </div>
+    <div data-errors class="alert alert-danger" role="alert" hidden></div>
+    <div data-warnings class="alert alert-warning" role="status" hidden></div>
+    <p data-status role="status" aria-live="polite"><%= t("manyfold_openscad.loading") %></p>
+    <div class="row">
+      <div class="col-lg-5">
+        <form data-parameters></form>
+        <div class="d-flex gap-2 mb-3">
+          <button type="button" data-generate class="btn btn-primary" disabled><%= t("manyfold_openscad.generate") %></button>
+          <button type="button" data-cancel class="btn btn-outline-danger" hidden><%= t("manyfold_openscad.cancel") %></button>
+          <button type="button" data-reset class="btn btn-outline-secondary" disabled><%= t("manyfold_openscad.reset") %></button>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <h2 class="h5"><%= t("manyfold_openscad.preview") %></h2>
+        <canvas data-preview class="openscad-preview border rounded mb-2" width="640" height="420" tabindex="0" role="img" aria-label="<%= t("manyfold_openscad.preview") %>" aria-describedby="openscad-preview-help"></canvas>
+        <p id="openscad-preview-help" class="small text-muted"><%= t("manyfold_openscad.preview_help") %></p>
+        <div data-stale class="alert alert-warning" role="status" hidden><%= t("manyfold_openscad.stale") %></div>
+        <form data-save-form>
+          <label class="form-label" for="openscad-filename"><%= t("manyfold_openscad.filename") %></label>
+          <input data-filename id="openscad-filename" type="text" class="form-control mb-2" maxlength="255" required pattern=".+[.][sS][tT][lL]" aria-describedby="openscad-filename-help">
+          <p id="openscad-filename-help" class="form-text"><%= t("manyfold_openscad.filename_help") %></p>
+          <button type="button" data-download class="btn btn-outline-primary" disabled><%= t("manyfold_openscad.download") %></button>
+          <% if @customizer_config[:canSave] || @customizer_config["canSave"] %>
+            <button type="submit" data-save class="btn btn-primary" disabled><%= t("manyfold_openscad.save") %></button>
+          <% else %>
+            <p class="text-muted mt-2"><%= t("manyfold_openscad.read_only") %></p>
+          <% end %>
+        </form>
+        <div data-saved></div>
+      </div>
+    </div>
+  </div>
+  <%= tag.script("", src: manyfold_openscad.asset_path(name: "customizer.mjs"), type: "module", nonce: content_security_policy_nonce) %>
+<% end %>
+
+<% saved_variants = Array(@variants).select(&:complete?) %>
+<% if saved_variants.present? %>
+  <h2 class="h4 mt-4"><%= t("manyfold_openscad.saved_variants") %></h2>
+  <ul class="list-group">
+    <% saved_variants.each do |variant| %>
+      <li class="list-group-item">
+        <%= variant.filename %>
+        <%= link_to t("manyfold_openscad.download_manifest"), manyfold_openscad.manifest_path(id: variant.id), class: "ms-3" %>
+        <% if variant.source_file %>
+          <%= link_to t("manyfold_openscad.reopen"), manyfold_openscad.reopen_variant_path(id: variant.id), class: "ms-3" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

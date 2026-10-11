@@ -1,0 +1,5 @@
+.openscad-preview { display: block; width: 100%; height: 26rem; touch-action: none; cursor: grab; }
+.openscad-preview:active { cursor: grabbing; }
+.openscad-vector { display: flex; gap: .5rem; }
+.openscad-vector > input { min-width: 0; }
+.openscad-busy { cursor: progress; }

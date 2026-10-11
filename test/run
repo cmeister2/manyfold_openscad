@@ -3,8 +3,8 @@ set -eu
 
 cd /usr/src/app
 redis-server --bind 127.0.0.1 --save "" --appendonly no --daemonize yes --logfile /tmp/redis.log
-bundle exec rails db:prepare:with_data >/tmp/cults3d-test-db.log 2>&1 || {
-  cat /tmp/cults3d-test-db.log
+bundle exec rails db:prepare:with_data >/tmp/openscad-test-db.log 2>&1 || {
+  cat /tmp/openscad-test-db.log
   exit 1
 }
-exec bundle exec rails runner /plugins/manyfold_cults3d/test/plugin_test.rb
+exec bundle exec rails runner /plugins/manyfold_openscad/test/backend_test.rb

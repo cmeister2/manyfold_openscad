@@ -30,7 +30,7 @@ export async function previewRelease({
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
   const head = git(cwd, "rev-parse", "HEAD");
-  const temporary = await mkdtemp(join(tmpdir(), "manyfold-cults3d-release-preview-"));
+  const temporary = await mkdtemp(join(tmpdir(), "manyfold-openscad-release-preview-"));
   const remote = join(temporary, "remote.git");
   const checkout = join(temporary, "checkout");
   const branch = "release-preview";

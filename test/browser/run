@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+set -eu
+plugin_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+container_name="manyfold-openscad-browser-$$"
+cleanup() { docker rm -f "$container_name" >/dev/null 2>&1 || true; }
+trap cleanup EXIT INT TERM
+docker run --rm -d --name "$container_name" \
+  --entrypoint /plugins/manyfold_openscad/test/browser/run-host \
+  --mount "type=bind,source=$plugin_root,target=/plugins/manyfold_openscad,readonly" \
+  --tmpfs /config --publish 127.0.0.1::3214 \
+  --env PLUGINS_PATH=/plugins --env DATABASE_URL=sqlite3:/config/manyfold.sqlite3 \
+  --env REDIS_URL=redis://127.0.0.1:6379/1 --env MULTIUSER=disabled \
+  --env SECRET_KEY_BASE=manyfold-openscad-disposable-browser-test-with-no-real-data \
+  --env MANYFOLD_OPENSCAD_BROWSER_TEST=1 --env MANYFOLD_LOG_LEVEL=warn \
+  "${OPENSCAD_TEST_IMAGE:-manyfold3d/manyfold-solo:0.150.0@sha256:f171f544b81ab92d373906a22114f65851b5b4f30861883baed754ca94651a7d}" >/dev/null
+address=$(docker port "$container_name" 3214/tcp)
+export OPENSCAD_BROWSER_URL="http://$address"
+cd "$plugin_root"
+npx playwright test

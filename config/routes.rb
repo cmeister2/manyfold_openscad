@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-ManyfoldCults3d::Engine.routes.draw do
-  root to: "manyfold_cults3d/status#index"
-  get "import", to: "manyfold_cults3d/imports#new", as: :import
-  post "import", to: "manyfold_cults3d/imports#create"
-  post "library_models/:id/create_model", to: "manyfold_cults3d/library_models#create_model", as: :create_model
-  get "link", to: "manyfold_cults3d/links#new", as: :link
-  post "link", to: "manyfold_cults3d/links#create"
-  get "creator_link", to: "manyfold_cults3d/creator_links#new", as: :creator_link
-  post "creator_link", to: "manyfold_cults3d/creator_links#create"
+ManyfoldOpenscad::Engine.routes.draw do
+  get "assets/:name", to: "manyfold_openscad/assets#show", as: :asset, constraints: {name: /[^\/]+/}, format: false
+  get "models/:model_id/customize", to: "manyfold_openscad/customizer#show", as: :customize_model
+  get "models/:model_id/sources/:source_file_id", to: "manyfold_openscad/customizer#source", as: :source_model
+  post "models/:model_id/variants", to: "manyfold_openscad/variants#create", as: :model_variants
+  get "variants/:id", to: "manyfold_openscad/variants#show", as: :variant
+  get "variants/:id/manifest", to: "manyfold_openscad/variants#manifest", as: :manifest
+  get "variants/:id/reopen", to: "manyfold_openscad/variants#reopen", as: :reopen_variant
 end

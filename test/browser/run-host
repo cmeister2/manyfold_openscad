@@ -1,0 +1,8 @@
+#!/bin/ash
+set -eu
+cd /usr/src/app
+redis-server --bind 127.0.0.1 --save "" --appendonly no --daemonize yes --logfile /tmp/redis.log
+bundle exec rails db:prepare:with_data
+bundle exec rails runner /plugins/manyfold_openscad/test/browser/seed.rb
+bundle exec sidekiq -q critical -q default -q scan > /tmp/browser-jobs.log 2>&1 &
+exec bundle exec rails server -b 0.0.0.0 -p 3214

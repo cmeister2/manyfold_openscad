@@ -1,7 +1,23 @@
 en:
-  manyfold_cults3d:
+  manyfold_openscad:
     errors:
-      request_failed: "Could not get Cults3D model details."
-      sync_failed: "Could not sync the Cults3D model."
-      creator_request_failed: "Could not get the Cults3D creator profile."
-      creator_sync_failed: "Could not sync the Cults3D creator profile."
+      not_scad: "Choose an OpenSCAD (.scad) source file."
+      source_missing: "The original OpenSCAD source is no longer available."
+      source_too_large: "The source exceeds this installation's source size limit."
+      source_encoding: "The source must be a UTF-8 text file."
+      invalid_parameters: "The parameter values are invalid. Use booleans, numbers, strings, or numeric vectors."
+      invalid_render_options: "The rendering options are invalid."
+      invalid_generation_time: "The generation time is invalid. Generate the STL again."
+      invalid_idempotency_key: "The save request identifier is invalid."
+      invalid_source_digest: "The source content digest is invalid. Reload the customizer."
+      invalid_engine_build: "The renderer build does not match this installation. Reload the customizer."
+      output_required: "Generate an STL before saving."
+      output_too_large: "The STL exceeds this installation's output size limit."
+      invalid_stl: "The upload must contain a nonempty valid STL mesh with finite coordinates."
+      invalid_filename: "Enter a filename ending in .stl without directory separators."
+      filename_collision: "A file with this name already exists. Choose a different filename."
+      idempotency_conflict: "This save request was already used with different contents. Retry with a new filename or save request."
+      source_changed: "The source changed after it was loaded. Reload and generate from the current source before saving."
+      save_failed: "The variant could not be saved. You can retry without generating again."
+      promotion_failed: "The variant could not be transferred into the library. Retry saving without generating again."
+      output_missing: "The saved variant file is no longer available."

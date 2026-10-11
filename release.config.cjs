@@ -8,7 +8,7 @@ module.exports = {
       prepareCmd: "python3 bin/package ${nextRelease.version}",
     }],
     ["@semantic-release/github", {
-      assets: [{ path: "dist/manyfold_cults3d.zip" }],
+      assets: [{ path: "dist/manyfold_openscad.zip" }],
       successCommentCondition: false,
       failCommentCondition: false,
       failTitle: false,

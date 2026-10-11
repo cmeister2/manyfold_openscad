@@ -24,7 +24,7 @@ const git = (cwd, ...args) => execFileSync("git", [
 ], { cwd, env: fixtureEnv, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
 async function fixture(t) {
-  const cwd = await mkdtemp(join(tmpdir(), "manyfold-cults3d-preview-test-"));
+  const cwd = await mkdtemp(join(tmpdir(), "manyfold-openscad-preview-test-"));
   t.after(() => rm(cwd, { recursive: true, force: true }));
   git(cwd, "init", "--quiet", "--initial-branch=main");
   await commit(cwd, "feat: initial inventory");
@@ -98,7 +98,7 @@ test("detached fork PR previews a feature release without credentials or checkou
   assert.match(result.nextRelease.notes, /### Features/);
   assert.match(result.nextRelease.notes, /add library filters/);
   assert.ok(result.nextRelease.notes.includes(
-    "https://github.com/cmeister2/manyfold_cults3d/compare/0.1.0...0.2.0",
+    "https://github.com/cmeister2/manyfold_openscad/compare/0.1.0...0.2.0",
   ));
   assert.match(logs, /Preview complete: 0\.2\.0\. No release was published\./);
   assert.deepEqual(await snapshot(cwd), before);
@@ -116,7 +116,7 @@ test("manual branch previews honor existing tags when no release is needed", asy
     GITHUB_ACTIONS: "true",
     GITHUB_EVENT_NAME: "workflow_dispatch",
     GITHUB_REF: "refs/heads/docs/preview",
-    GITHUB_REPOSITORY: "cmeister2/manyfold_cults3d",
+    GITHUB_REPOSITORY: "cmeister2/manyfold_openscad",
     GITHUB_TOKEN: "invalid-test-token",
   });
 

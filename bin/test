@@ -3,6 +3,10 @@ set -eu
 
 plugin_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
+cd "$plugin_root"
+python3 -B bin/build-renderer --verify
+npm run test:unit
+npm run test:release
 python3 -B -m unittest discover -s "$plugin_root/test" -p '*_test.py'
 
 "$plugin_root/test/run-container" "$plugin_root"

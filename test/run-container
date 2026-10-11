@@ -5,16 +5,16 @@ plugin_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 source_root=$(CDPATH= cd -- "$1" && pwd)
 
 docker run --rm --pull=missing --network none \
-  --entrypoint /plugins/manyfold_cults3d/test/run \
-  --mount "type=bind,source=$source_root,target=/plugins/manyfold_cults3d,readonly" \
-  --mount "type=bind,source=$plugin_root/test,target=/plugins/manyfold_cults3d/test,readonly" \
+  --entrypoint /plugins/manyfold_openscad/test/run \
+  --mount "type=bind,source=$source_root,target=/plugins/manyfold_openscad,readonly" \
+  --mount "type=bind,source=$plugin_root/test,target=/plugins/manyfold_openscad/test,readonly" \
   --tmpfs /config \
   --env PLUGINS_PATH=/plugins \
   --env DATABASE_URL=sqlite3:/config/manyfold.sqlite3 \
   --env REDIS_URL=redis://127.0.0.1:6379/1 \
   --env MULTIUSER=enabled \
   --env MANYFOLD_LOG_LEVEL=warn \
-  --env SECRET_KEY_BASE=manyfold-cults3d-disposable-local-test-secret-with-no-real-data \
-  --env MANYFOLD_CULTS3D_TEST=1 \
-  --env "MANYFOLD_CULTS3D_EXPECTED_VERSION=${2:-}" \
-  manyfold3d/manyfold-solo:0.146.0
+  --env SECRET_KEY_BASE=manyfold-openscad-disposable-local-test-secret-with-no-real-data \
+  --env MANYFOLD_OPENSCAD_TEST=1 \
+  --env "MANYFOLD_OPENSCAD_EXPECTED_VERSION=${2:-}" \
+  "${OPENSCAD_TEST_IMAGE:-manyfold3d/manyfold-solo:0.150.0@sha256:f171f544b81ab92d373906a22114f65851b5b4f30861883baed754ca94651a7d}"

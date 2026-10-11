@@ -13,7 +13,7 @@ const { analyzeCommits } = await import(pathToFileURL(
   releaseRequire.resolve("@semantic-release/commit-analyzer"),
 ).href);
 const root = fileURLToPath(new URL("../", import.meta.url));
-const repositoryUrl = "https://github.com/cmeister2/manyfold_cults3d";
+const repositoryUrl = "https://github.com/cmeister2/manyfold_openscad";
 const pluginOptions = (name) => releaseConfig.plugins.find(
   (plugin) => Array.isArray(plugin) && plugin[0] === name,
 )[1];

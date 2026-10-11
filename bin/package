@@ -8,7 +8,7 @@ import zipfile
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    gemspec = root / "manyfold_cults3d.gemspec"
+    gemspec = root / "manyfold_openscad.gemspec"
     source = gemspec.read_text(encoding="utf-8")
     version_line = re.compile(r'(?m)^([ \t]*spec\.version[ \t]*=[ \t]*)"([^"]+)"[ \t]*$')
     match = version_line.search(source)
@@ -22,11 +22,11 @@ def main():
         parser.error("VERSION must be an X.Y.Z version without leading zeroes.")
 
     packaged_gemspec = version_line.sub(lambda line: f'{line[1]}"{args.version}"', source)
-    files = [gemspec]
-    for directory in ("app", "config", "db", "lib"):
+    files = [gemspec, root / "README.md", root / "LICENSE"]
+    for directory in ("app", "config", "db", "lib", "vendor", "docs", "test/fixtures"):
         files.extend(path for path in (root / directory).rglob("*") if path.is_file())
 
-    destination = root / "dist" / "manyfold_cults3d.zip"
+    destination = root / "dist" / "manyfold_openscad.zip"
     destination.parent.mkdir(exist_ok=True)
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(files):
