@@ -1,2 +1,3 @@
 # Preserve upstream asset bytes, including their original whitespace.
 vendor/openscad/** -text -whitespace
+demo/licenses/rpg-awesome-continued-* -text -whitespace

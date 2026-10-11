@@ -14,6 +14,8 @@
   "scripts": {
     "test:unit": "node --test test/customizer*_test.mjs test/renderer*_test.mjs",
     "test:browser": "test/browser/run",
+    "build:demo": "bin/build-demo",
+    "test:demo": "playwright test --config playwright.demo.config.mjs",
     "release": "semantic-release",
     "release:dry-run": "node bin/release-dry-run.mjs",
     "test:release": "node --test test/release*_test.mjs"
