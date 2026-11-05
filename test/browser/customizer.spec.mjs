@@ -6,6 +6,7 @@ import {parseSTL} from "../../app/assets/manyfold_openscad/preview.mjs";
 const base = process.env.OPENSCAD_BROWSER_URL || "http://127.0.0.1:3216";
 const pagePath = name => `${base}/manyfold_openscad/models/${name}/customize`;
 const measurements = [];
+let hostCapabilities;
 
 async function downloadBounds(page, info, filename) {
   const downloadEvent = page.waitForEvent("download");
@@ -19,7 +20,19 @@ async function downloadBounds(page, info, filename) {
 test.beforeAll(async ({request}) => {
   const deadline = Date.now() + 150000;
   while (Date.now() < deadline) {
-    try { if ((await request.get(`${base}/health`)).ok()) return; } catch {}
+    let ready = false;
+    try { ready = (await request.get(`${base}/health`)).ok(); } catch {}
+    if (ready) {
+      const response = await request.get(`${base}/openscad-browser-host.json`);
+      expect(response.ok()).toBe(true);
+      hostCapabilities = await response.json();
+      // A current host must not turn a missing slicer registration into a skip.
+      const version = hostCapabilities.version.match(/^v?(\d+)\.(\d+)\./);
+      if (version && (Number(version[1]) > 0 || Number(version[2]) >= 154)) {
+        expect(hostCapabilities.slicing).toBe(true);
+      }
+      return;
+    }
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   throw new Error("The disposable Manyfold browser fixture did not start.");
@@ -105,6 +118,24 @@ test("simple box renders on opening offline, preserves source, saves and reopens
   await expect(page.locator("[data-generate]")).toBeEnabled();
   expect(errors).toEqual([]);
   await page.screenshot({path: info.outputPath("customizer.png"), fullPage: true});
+});
+
+test("saved customizer STL opens the host Kiri:Moto slicer", async ({page}, info) => {
+  test.skip(!hostCapabilities.slicing, "The actual host predates built-in STL slicing");
+  await page.goto(pagePath("customizerbox"));
+  await expect(page.locator("[data-save]")).toBeEnabled();
+  await page.locator("[data-filename]").fill(`slice-box-${Date.now()}.stl`);
+  await page.locator("[data-save]").click();
+  const viewFile = page.locator("[data-saved] a[href*='/model_files/']");
+  await expect(viewFile).toBeVisible({timeout: 45000});
+  await viewFile.click();
+  const sliceLink = page.locator("a[href$='/slice']");
+  await expect(sliceLink).toBeVisible();
+  await sliceLink.click();
+  const slicer = page.frameLocator("#kiri-moto-frame");
+  await expect(page.locator("#kiri-moto-frame")).toHaveAttribute("src", "/applications/kiri");
+  await expect(slicer.locator("#app")).toBeVisible({timeout: 45000});
+  await page.screenshot({path: info.outputPath("saved-stl-slicer.png"), fullPage: true});
 });
 
 test("rich metadata controls expose labels, groups, hidden fields, vectors, and literal strings", async ({page}, info) => {
