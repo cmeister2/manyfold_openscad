@@ -6,7 +6,7 @@ Rendering happens in your browser. OpenSCAD comes bundled with the plugin, so it
 
 ## Install
 
-This plugin requires **Manyfold 0.150.0 or newer** and is tested against 0.150.0 and 0.154.0. Back up your database before installing or upgrading.
+This plugin requires **Manyfold 0.150.0 or newer**. CI checks the 0.150.0 minimum and the latest Manyfold image. Back up your database before installing or upgrading.
 
 1. Upload `manyfold_openscad.zip` under **Settings > Plugins**. Keep the same ZIP filename when updating.
 2. Restart Manyfold and its background workers. In Docker, Manyfold runs the plugin's database migrations automatically during startup.
@@ -87,7 +87,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-`bin/test` covers the browser code, real OpenSCAD renders, release tools, and packaging. It also tests the Rails integration from both the checkout and a built ZIP, using disposable containers. Development and tests default to Manyfold 0.154.0. CI also checks the minimum supported host, 0.150.0. Set `OPENSCAD_TEST_IMAGE` to use another compatible Manyfold image and `OPENSCAD_TEST_HOST_VERSION` to verify its version.
+`bin/test` covers the browser code, real OpenSCAD renders, release tools, and packaging. It also tests the Rails integration from both the checkout and a built ZIP, using disposable containers. Development and local tests default to pinned Manyfold 0.154.0. CI checks the pinned 0.150.0 minimum and pulls `manyfold3d/manyfold-solo:latest` once for its current-host job, sharing that image across checkout, ZIP and browser checks. Set `OPENSCAD_TEST_IMAGE` to use another compatible Manyfold image and `OPENSCAD_TEST_HOST_VERSION` to verify an exact version.
 
 To build the plugin ZIP:
 

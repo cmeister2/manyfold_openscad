@@ -24,13 +24,17 @@ jobs:
         include:
           - manyfold: 0.150.0
             image: manyfold3d/manyfold-solo:0.150.0@sha256:f171f544b81ab92d373906a22114f65851b5b4f30861883baed754ca94651a7d
-          - manyfold: 0.154.0
-            image: manyfold3d/manyfold-solo:0.154.0@sha256:fc6deade2a191033d109a8296876d504334dc14bee6097d0ae3ca4a218354ff7
+            expected_host_version: 0.150.0
+          - manyfold: latest
+            image: manyfold3d/manyfold-solo:latest
+            expected_host_version: ''
     env:
       OPENSCAD_TEST_IMAGE: ${{ matrix.image }}
-      OPENSCAD_TEST_HOST_VERSION: ${{ matrix.manyfold }}
+      OPENSCAD_TEST_HOST_VERSION: ${{ matrix.expected_host_version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Pull Manyfold test image
+        run: docker pull "$OPENSCAD_TEST_IMAGE"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26'

@@ -1,7 +1,7 @@
 # Renderer feasibility and validation
 
 The plugin is implemented as a mounted Rails engine with Manyfold 0.150.0 as its minimum supported host.
-Development defaults to 0.154.0; CI tests both versions.
+Development defaults to pinned 0.154.0; CI tests the pinned minimum and the latest Manyfold image.
 It registers the existing model-menu hook and appends its migration directory.
 The host needs no source change. Manyfold's Docker startup runs
 `db:prepare:with_data`, which includes the plugin's migrations. Installation
