@@ -6,6 +6,12 @@ abort "Disposable browser fixture only" unless ENV["MANYFOLD_OPENSCAD_BROWSER_TE
 expected_host = ENV["OPENSCAD_TEST_HOST_VERSION"].presence
 abort "Unexpected Manyfold host version" if expected_host && Rails.application.config.app_version != expected_host
 
+# Only this disposable fixture publishes host capabilities for browser tests.
+File.write(Rails.root.join("public", "openscad-browser-host.json"), JSON.generate({
+  version: Rails.application.config.app_version,
+  slicing: ModelFilePolicy.method_defined?(:slice?) && FileHandlers.handlers_for(environment: :slice, mime_type: "model/stl").any?
+}))
+
 admin = User.create!(username: "browser", email: "browser@example.invalid",
   password: SecureRandom.hex(24), approved: true)
 admin.add_role(:administrator)

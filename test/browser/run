@@ -17,4 +17,4 @@ docker run --rm -d --name "$container_name" \
 address=$(docker port "$container_name" 3214/tcp)
 export OPENSCAD_BROWSER_URL="http://$address"
 cd "$plugin_root"
-npx playwright test
+npx playwright test "$@"
