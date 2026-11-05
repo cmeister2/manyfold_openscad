@@ -3,6 +3,9 @@
 require "fileutils"
 abort "Disposable browser fixture only" unless ENV["MANYFOLD_OPENSCAD_BROWSER_TEST"] == "1"
 
+expected_host = ENV["OPENSCAD_TEST_HOST_VERSION"].presence
+abort "Unexpected Manyfold host version" if expected_host && Rails.application.config.app_version != expected_host
+
 admin = User.create!(username: "browser", email: "browser@example.invalid",
   password: SecureRandom.hex(24), approved: true)
 admin.add_role(:administrator)

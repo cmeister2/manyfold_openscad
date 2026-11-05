@@ -107,6 +107,24 @@ test("simple box renders on opening offline, preserves source, saves and reopens
   await page.screenshot({path: info.outputPath("customizer.png"), fullPage: true});
 });
 
+test("saved customizer STL opens the host Kiri:Moto slicer", async ({page}, info) => {
+  test.skip(process.env.OPENSCAD_TEST_HOST_VERSION === "0.150.0", "The minimum supported host predates built-in slicing");
+  await page.goto(pagePath("customizerbox"));
+  await expect(page.locator("[data-save]")).toBeEnabled();
+  await page.locator("[data-filename]").fill(`slice-box-${Date.now()}.stl`);
+  await page.locator("[data-save]").click();
+  const viewFile = page.locator("[data-saved] a[href*='/model_files/']");
+  await expect(viewFile).toBeVisible({timeout: 45000});
+  await viewFile.click();
+  const sliceLink = page.locator("a[href$='/slice']");
+  await expect(sliceLink).toBeVisible();
+  await sliceLink.click();
+  const slicer = page.frameLocator("#kiri-moto-frame");
+  await expect(page.locator("#kiri-moto-frame")).toHaveAttribute("src", "/applications/kiri");
+  await expect(slicer.locator("#app")).toBeVisible({timeout: 45000});
+  await page.screenshot({path: info.outputPath("saved-stl-slicer.png"), fullPage: true});
+});
+
 test("rich metadata controls expose labels, groups, hidden fields, vectors, and literal strings", async ({page}, info) => {
   await page.goto(pagePath("customizercontrols"));
   await expect(page.locator("[data-download]")).toBeEnabled();

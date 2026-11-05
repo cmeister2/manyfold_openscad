@@ -17,6 +17,11 @@ Warden.test_mode!
 class OpenscadBackendTest < Minitest::Test
   include Warden::Test::Helpers
 
+  def run
+    # Minitest autorun starts after the Rails runner executor has finished.
+    Rails.application.executor.perform { super }
+  end
+
   SOURCE = "/* [Dimensions] */\n// Box width\nwidth = 100; // [10:1:200]\ncube([width, 20, 10]);\n"
 
   def setup
@@ -50,6 +55,43 @@ class OpenscadBackendTest < Minitest::Test
     @configuration.max_source_bytes, @configuration.max_output_bytes = @original_limits
     FileUtils.remove_entry(@path) if @path && File.exist?(@path)
     ActiveJob::Base.queue_adapter.enqueued_jobs.clear
+  end
+
+  def test_host_matches_requested_version
+    expected_host = ENV["OPENSCAD_TEST_HOST_VERSION"].presence
+    skip "No host version requested" unless expected_host
+    assert_equal expected_host, Rails.application.config.app_version
+  end
+
+  def test_saved_stl_can_enter_host_slicer_only_with_edit_access
+    skip "Host predates built-in slicing" unless ModelFilePolicy.method_defined?(:slice?)
+
+    session = browser(@users.first)
+    session.get(page_url)
+    post_variant(session)
+    assert_equal 202, session.response.status, session.response.body
+    payload = json(session)
+    variant = ManyfoldOpenscad::Variant.find(payload.fetch("id"))
+    promote(variant)
+    ManyfoldOpenscad::FinalizeVariantJob.perform_now(variant.id)
+    session.get(payload.fetch("status_url"))
+    file_url = json(session).fetch("file_url")
+    slice_url = "#{file_url}/slice"
+    session.get(file_url)
+    assert_equal 200, session.response.status
+    assert Nokogiri::HTML(session.response.body).at_css("a[href='#{slice_url}']"), "Saved STL should offer the host slicer"
+    session.get(slice_url)
+    assert_equal 200, session.response.status
+    document = Nokogiri::HTML(session.response.body)
+    assert document.at_css("iframe[src='/applications/kiri']"), "The host must serve its real Kiri:Moto component"
+    assert_equal variant.model_file.public_id, document.at_css("[data-kiri-moto-source-file-id-value]")["data-kiri-moto-source-file-id-value"]
+
+    session = browser(@users[1])
+    session.get(file_url)
+    assert_equal 200, session.response.status
+    refute Nokogiri::HTML(session.response.body).at_css("a[href='#{slice_url}']")
+    session.get(slice_url)
+    assert_equal 404, session.response.status
   end
 
   def test_engine_installs_migration_and_menu_in_real_host
