@@ -1,4 +1,4 @@
-FROM manyfold3d/manyfold-solo:0.154.0@sha256:fc6deade2a191033d109a8296876d504334dc14bee6097d0ae3ca4a218354ff7
+FROM manyfold3d/manyfold-solo:0.154.1@sha256:f1b7784fb63aec500fca61081d3f970948fc652ad16ecdc5d57cd3c0c925127f
 
 COPY docker/local-setup.rb /usr/src/app/docker/local-setup.rb
 RUN sed -i '/^bundle exec rails db:prepare:with_data$/a bundle exec rails runner docker/local-setup.rb' /usr/src/app/bin/docker-entrypoint.sh
